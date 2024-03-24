@@ -36,40 +36,46 @@ def detect_hands(frame):
 
     return min_x, min_y, max_x, max_y
 
+def extract_frames(word, video_url):
+    out_file_urls = []
+    
+    cap = cv2.VideoCapture(video_url)
 
-cap = cv2.VideoCapture(video_s3_url)
+    if not cap.isOpened():
+        print("Error: Unable to open video")
+        exit()
 
-if not cap.isOpened():
-    print("Error: Unable to open video")
-    exit()
+    frame_count = 0
 
-frame_count = 0
+    while True:
+        ret, frame = cap.read()
 
-while True:
-    ret, frame = cap.read()
+        if not ret:
+            break
 
-    if not ret:
-        break
+        min_x, min_y, max_x, max_y = detect_hands(frame)
 
-    min_x, min_y, max_x, max_y = detect_hands(frame)
+        if min_x != float('inf') and min_y != float('inf') and max_x != float('-inf') and max_y != float('-inf'):
+            min_x = max(0, min_x)
+            min_y = max(0, min_y)
+            max_x = min(frame.shape[1], max_x)
+            max_y = min(frame.shape[0], max_y)
 
-    if min_x != float('inf') and min_y != float('inf') and max_x != float('-inf') and max_y != float('-inf'):
-        min_x = max(0, min_x)
-        min_y = max(0, min_y)
-        max_x = min(frame.shape[1], max_x)
-        max_y = min(frame.shape[0], max_y)
-
-        cropped_frame = frame[min_y:max_y, min_x:max_x]
+            cropped_frame = frame[min_y:max_y, min_x:max_x]
         
-        directory = Path(f'pictures/{word}')
+            directory = Path(f'pictures/{word}')
 
-        directory.mkdir(parents=True, exist_ok=True)
+            directory.mkdir(parents=True, exist_ok=True)
 
-        output_dirname = f'pictures/{word}'
-        output_filename = f'{output_dirname}/{word}_{frame_count}.jpg'
+            output_dirname = f'pictures/{word}'
+            output_filename = f'{output_dirname}/{word}_{frame_count}.jpg'
 
-        cv2.imwrite(output_filename, cropped_frame)
+            cv2.imwrite(output_filename, cropped_frame)
+            out_file_urls.append(output_filename)
 
-        frame_count += 1
+            frame_count += 1
 
-cap.release()
+
+    cap.release()
+
+    return output_dirname, out_file_urls
