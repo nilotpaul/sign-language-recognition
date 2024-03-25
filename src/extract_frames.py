@@ -2,12 +2,6 @@ import cv2
 import mediapipe as mp
 from pathlib import Path
 
-from download import data
-
-video_url = data[0]['video']
-video_s3_url = 'https://sign-language-recognition.s3.amazonaws.com/video1.mp4'
-word = data[0]['word']
-
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
